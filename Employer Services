@@ -1,0 +1,344 @@
+
+library(readxl)
+library(dplyr)
+library(magrittr)
+library(ggplot2)
+library(stringr)
+# library(ggthemes)
+
+newhire <- read_excel (
+  "newhire2025.xlsx",
+  sheet = 1
+)
+
+tasks <- read_excel (
+  "fullreporttasks.xlsx",
+  sheet = 1
+)
+##Task filtering
+taskfilter <- tasks %>%
+  filter(quarter == "Q4 2025") %>%
+  filter(!`Case Manager Name` %in% c("MCKENZI RIDDELL"))
+
+taskfilterallquarters <- tasks %>%
+  filter(!`Case Manager Name` %in% c("MCKENZI RIDDELL"))
+
+task_clean <- taskfilter %>%
+  rename(
+    manager = `Case Manager Name`)
+##task counts by status Q4
+taskcountsstatus <- task_clean %>%
+  group_by(manager, RSN_CD) %>%
+  summarise(status = n(), .groups = "drop")
+##task count total per manager Q4
+taskmanagercount <- task_clean %>%
+  count(manager, name = "taskcount")
+##task count total team per quarter
+taskquartercount <- taskfilterallquarters %>%
+  count(quarter, name = "taskcount")
+##Task count Q4 by month
+taskmonthcount <- task_clean %>%
+  count(month, name = "taskcount")
+
+
+newhiresubmittedthroughfile <- newhire %>%
+  mutate (
+    code1 = as.numeric(code1)
+  ) %>%
+  group_by(Quarter) %>%
+  summarize(code1_sum = sum(code1, na.rm = TRUE), .groups = 'drop')
+
+newhiresubmittedindividually <- newhire %>%
+  mutate (
+    code2 = as.numeric(code2)
+  ) %>%
+  group_by(Quarter) %>%
+  summarize(code2_sum = sum(code2, na.rm = TRUE), .groups = 'drop')
+
+
+totalnewhires <- newhire %>%
+  mutate (
+    code3 = as.numeric(code3)
+  ) %>%
+  group_by(Quarter) %>%
+  summarize(code3_sum = sum(code3, na.rm = TRUE), .groups = 'drop')
+
+numberofcompanies <- newhire %>%
+  mutate (
+    code4 = as.numeric(code4)
+  ) %>%
+  group_by(Quarter) %>%
+  summarize(
+    code4_sum = sum(code4, na.rm = TRUE),
+    .groups = 'drop'
+    )
+
+
+DCS_colors <- c("#64223f85","#19285785","#709f8785","#e2b77d85","#c57c5985")
+DCS_colors2 <- c("#c57c5985","#19285785","#64223f85","#709f8785","#e2b77d85")
+DCS_colors3 <- c("#FBB03A85","#CA666B85","#9D5B6585","#67AA8385","#31674F85","#9AD3D285", "#167FA885","#89A89A85", "#C7A1A785", "#FDD28F85", "#D27C8085", "#4E7D6885" )
+DCS_colors4 <- c("#4E7D6885", "#A8D9D885", "#B98A9185", "#9BC8DA85", "#E8BDC085", "#7DB69585", "#B7E0DF85", "#FCC77285", "#167FA885" )
+DCS_colorscontrast <- c("#9AD3D2", "#167FA8", "#9BC8DA")
+DCS_colorscontrast2 <- c("#CA666B",  "#FBB03A", "#9D5B65")
+##NEW HIRES SUBMITTED THROUGH FILE
+
+DCS_colorstest <- c(
+  "Q1 2025" = "#00324a",
+  "Q2 2025" = "#2a6375",
+  "Q3 2025" = "#77a8b1",
+  "Q4 2025" = "#c9e3ea"
+)
+
+
+newhirefiletest <- ggplot(newhiresubmittedthroughfile, aes(x = Quarter, y = code1_sum, fill = Quarter)) +  ##color = manager##color = manager Note color = manager
+  geom_col(color = "grey22") + ##Type of graph fill = "lightgrey"
+  theme_classic() + ##Graph overall theme
+  scale_fill_manual(values = DCS_colors3) +
+  geom_text ( ##Data count labels on the bars
+    aes(label = scales::comma(code1_sum)),
+    vjust = -0.3,
+    size = 10,
+    color = "grey22"
+  ) +
+  theme( ##Here edits the text size of the x and y and titles
+    axis.text.x = element_text(size = 20, color = "#00324a"),##text of the x variable
+    axis.text.y  = element_text(size = 15, color = "#00324a85"),
+    axis.title.x = element_text(size = 16, face = "bold", hjust = 0.5, color = "#00324a"),##x variable title
+    axis.title.y = element_text(size = 16, face = "bold", hjust = 0.5, color = "#00324a"),##y variable title
+    plot.title = element_text(size = 25, face = "bold", hjust = 0.5, color = "#00324a"), ##plot title, hjust is where its positioned
+    plot.subtitle = element_text(size = 17, face = "bold", hjust = 0.5, color = "#00324a85"), ##plot title, hjust is where its positioned
+    legend.position = "none" ##excludes the legend in the final output
+  ) +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 12)) + ##Wrapping labels if theyre too long/ dont  run into each other
+  labs ( ##labeling/ titles
+    x = "Quarter",
+    y = "New Hires",
+    title = "Total New Hire Submitted Through File Per Quarter",
+    subtitle = "Employer Services- Year Review 2025"
+  )
+
+plot(newhirefiletest)
+##NEW HIRES SUBMITTED INDIVIDUALLY
+newhirefileindividually <- ggplot(newhiresubmittedindividually, aes(x = Quarter, y = code2_sum, fill = Quarter)) +  ##color = manager##color = manager Note color = manager
+  geom_col(color = "grey22") + ##Type of graph fill = "lightgrey"
+  theme_classic() + ##Graph overall theme
+  scale_fill_manual(values = DCS_colors3) +
+  geom_text ( ##Data count labels on the bars
+    aes(label = scales::comma(code2_sum)),
+    vjust = -0.3,
+    size = 10,
+    color = "grey22"
+  ) +
+  theme( ##Here edits the text size of the x and y and titles
+    axis.text.x = element_text(size = 20, color = "#00324a"),##text of the x variable
+    axis.text.y  = element_text(size = 15, color = "#00324a85"),
+    axis.title.x = element_text(size = 16, face = "bold", hjust = 0.5, color = "#00324a"),##x variable title
+    axis.title.y = element_text(size = 16, face = "bold", hjust = 0.5, color = "#00324a"),##y variable title
+    plot.title = element_text(size = 25, face = "bold", hjust = 0.5, color = "#00324a"), ##plot title, hjust is where its positioned
+    plot.subtitle = element_text(size = 17, face = "bold", hjust = 0.5, color = "#00324a85"), ##plot title, hjust is where its positioned
+    legend.position = "none" ##excludes the legend in the final output
+  ) +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 12)) + ##Wrapping labels if theyre too long/ dont  run into each other
+  labs ( ##labeling/ titles
+    x = "Quarter",
+    y = "New Hires Submitted",
+    title = "Total New Hire Submitted Individually Per Quarter",
+    subtitle = "Employer Services- Year Review 2025"
+  )
+
+plot(newhirefileindividually) ##preview the plot
+
+##TOTAL NEW HIRES
+totalnewhires <- ggplot(totalnewhires, aes(x = Quarter, y = code3_sum, fill = Quarter)) +  ##color = manager##color = manager Note color = manager
+  geom_col(color = "grey22") + ##Type of graph fill = "lightgrey"
+  theme_classic() + ##Graph overall theme
+  scale_fill_manual(values = DCS_colors3) +
+  geom_text ( ##Data count labels on the bars
+    aes(label = scales::comma(code3_sum)),
+    vjust = -0.3,
+    size = 10,
+    color = "grey22"
+  ) +
+  theme( ##Here edits the text size of the x and y and titles
+    axis.text.x = element_text(size = 20, color = "#00324a"),##text of the x variable
+    axis.text.y  = element_text(size = 15, color = "#00324a85"),
+    axis.title.x = element_text(size = 16, face = "bold", hjust = 0.5, color = "#00324a"),##x variable title
+    axis.title.y = element_text(size = 16, face = "bold", hjust = 0.5, color = "#00324a"),##y variable title
+    plot.title = element_text(size = 25, face = "bold", hjust = 0.5, color = "#00324a"), ##plot title, hjust is where its positioned
+    plot.subtitle = element_text(size = 17, face = "bold", hjust = 0.5, color = "#00324a85"), ##plot title, hjust is where its positioned
+    legend.position = "none" ##excludes the legend in the final output
+  ) +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 12)) + ##Wrapping labels if theyre too long/ dont  run into each other
+  labs ( ##labeling/ titles
+    x = "Quarter",
+    y = "New Hires",
+    title = "Total New Hire Submitted Per Quarter",
+    subtitle = "Employer Services- 4th Quarter 2025"
+  )
+
+plot(totalnewhires) ##preview the plot
+
+##NUMBER OF COMPANIES
+companies <- ggplot(numberofcompanies, aes(x = Quarter, y = code4_sum, fill = Quarter)) +  ##color = manager##color = manager Note color = manager
+  geom_col(color = "grey22") + ##Type of graph fill = "lightgrey"
+  theme_classic() + ##Graph overall theme
+  scale_fill_manual(values = DCS_colors3) +
+  geom_text ( ##Data count labels on the bars
+    aes(label = scales::comma(code4_sum)),
+    vjust = -0.3,
+    size = 10,
+    color = "grey22"
+  ) +
+  theme( ##Here edits the text size of the x and y and titles
+    axis.text.x = element_text(size = 20, color = "#00324a"),##text of the x variable
+    axis.text.y  = element_text(size = 15, color = "#00324a85"),
+    axis.title.x = element_text(size = 16, face = "bold", hjust = 0.5, color = "#00324a"),##x variable title
+    axis.title.y = element_text(size = 16, face = "bold", hjust = 0.5, color = "#00324a"),##y variable title
+    plot.title = element_text(size = 25, face = "bold", hjust = 0.5, color = "#00324a"), ##plot title, hjust is where its positioned
+    plot.subtitle = element_text(size = 17, face = "bold", hjust = 0.5, color = "#00324a85"), ##plot title, hjust is where its positioned
+    legend.position = "none" ##excludes the legend in the final output
+  ) +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 12)) + ##Wrapping labels if theyre too long/ dont  run into each other
+  labs ( ##labeling/ titles
+    x = "Quarter",
+    y = "Number of Companies",
+    title = "Total Companies Submitted Per Quarter",
+    subtitle = "Employer Services- Year Review 2025"
+  )
+
+plot(companies) ##preview the plot
+
+##Quarter 4 Review
+
+##NUMBER OF COMPANIES
+taskmanager<- ggplot(taskmanagercount, aes(x = manager, y = taskcount, fill = manager)) +  ##color = manager##color = manager Note color = manager
+  geom_col(color = "grey22") + ##Type of graph fill = "lightgrey"
+  theme_classic() + ##Graph overall theme
+  scale_fill_manual(values = DCS_colors3) +
+  geom_text ( ##Data count labels on the bars
+    aes(label = scales::comma(taskcount)),
+    vjust = -0.3,
+    size = 10,
+    color = "grey22"
+  ) +
+  theme( ##Here edits the text size of the x and y and titles
+    axis.text.x = element_text(size = 20, color = "#00324a"),##text of the x variable
+    axis.text.y  = element_text(size = 15, color = "#00324a85"),
+    axis.title.x = element_text(size = 16, face = "bold", hjust = 0.5, color = "#00324a"),##x variable title
+    axis.title.y = element_text(size = 16, face = "bold", hjust = 0.5, color = "#00324a"),##y variable title
+    plot.title = element_text(size = 25, face = "bold", hjust = 0.5, color = "#00324a"), ##plot title, hjust is where its positioned
+    plot.subtitle = element_text(size = 17, face = "bold", hjust = 0.5, color = "#00324a85"), ##plot title, hjust is where its positioned
+    legend.position = "none" ##excludes the legend in the final output
+  ) +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 12)) + ##Wrapping labels if theyre too long/ dont  run into each other
+  labs ( ##labeling/ titles
+    x = "Employee",
+    y = "Task Actions",
+    title = "Total Task Actions per Employee",
+    subtitle = "Employer Services- 4th Quarter 2025"
+  )
+
+plot(taskmanager) ##preview the plot
+
+##count of tasks with status
+status_count_managers <- ggplot(taskcountsstatus, aes(x = manager, y = status, fill = RSN_CD)) +  ##color = manager##color = manager Note color = manager
+  geom_bar(position="dodge", stat="identity") + ##Type of graph fill = "lightgrey"
+  theme_classic() + ##Graph overall theme
+  scale_fill_manual(values = DCS_colors4) +
+  geom_text ( ##Data count labels on the bars
+    aes(label = scales::comma(status)),
+    vjust = -0.3,
+    size = 10,
+    position = position_dodge(0.9),
+    color = "grey22"
+  ) +
+  theme( ##Here edits the text size of the x and y and titles
+    axis.text.x = element_text(size = 20, color = "#00324a"),##text of the x variable
+    axis.text.y  = element_text(size = 15, color = "#00324a85"),
+    axis.title.x = element_text(size = 16, face = "bold", hjust = 0.5, color = "#00324a"),##x variable title
+    axis.title.y = element_text(size = 16, face = "bold", hjust = 0.5, color = "#00324a"),##y variable title
+    plot.title = element_text(size = 30, face = "bold", hjust = 0.5, color = "#00324a"), ##plot title, hjust is where its positioned
+    plot.subtitle = element_text(size = 17, face = "bold", hjust = 0.5, color = "#00324a85"), ##plot title, hjust is where its positioned
+    legend.position = "bottom",
+    legend.key.size = unit(5, "lines"),
+    legend.text = element_text(size = 20) ##legend position on bottom
+  ) +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 12)) + ##Wrapping labels if theyre too long/ dont  run into each other
+  labs ( ##labeling/ titles
+    x = "Employee",
+    y = "Task Actions",
+    title = "Task Activity with Status - Individual Workers",
+    subtitle = "Central Mail Team - 4th Quarter 2025",
+    fill = "Status"
+  )
+
+##count of tasks per month whole team
+taskmonthq4<- ggplot(taskmonthcount, aes(x = month, y = taskcount, fill = month)) +  ##color = manager##color = manager Note color = manager
+  geom_col(color = "grey22") + ##Type of graph fill = "lightgrey"
+  theme_classic() + ##Graph overall theme
+  scale_fill_manual(values = DCS_colors3) +
+  geom_text ( ##Data count labels on the bars
+    aes(label = scales::comma(taskcount)),
+    vjust = -0.3,
+    size = 10,
+    color = "grey22"
+  ) +
+  theme( ##Here edits the text size of the x and y and titles
+    axis.text.x = element_text(size = 20, color = "#00324a"),##text of the x variable
+    axis.text.y  = element_text(size = 15, color = "#00324a85"),
+    axis.title.x = element_text(size = 16, face = "bold", hjust = 0.5, color = "#00324a"),##x variable title
+    axis.title.y = element_text(size = 16, face = "bold", hjust = 0.5, color = "#00324a"),##y variable title
+    plot.title = element_text(size = 25, face = "bold", hjust = 0.5, color = "#00324a"), ##plot title, hjust is where its positioned
+    plot.subtitle = element_text(size = 17, face = "bold", hjust = 0.5, color = "#00324a85"), ##plot title, hjust is where its positioned
+    legend.position = "none" ##excludes the legend in the final output
+  ) +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 12)) + ##Wrapping labels if theyre too long/ dont  run into each other
+  labs ( ##labeling/ titles
+    x = "Month",
+    y = "Task Actions",
+    title = "Total Task Actions",
+    subtitle = "Employer Services- 4th Quarter 2025"
+  )
+
+
+##count of tasks per month whole team
+taskquarter<- ggplot(taskquartercount, aes(x = quarter, y = taskcount, fill = quarter)) +  ##color = manager##color = manager Note color = manager
+  geom_col(color = "grey22") + ##Type of graph fill = "lightgrey"
+  theme_classic() + ##Graph overall theme
+  scale_fill_manual(values = DCS_colors3) +
+  geom_text ( ##Data count labels on the bars
+    aes(label = scales::comma(taskcount)),
+    vjust = -0.3,
+    size = 10,
+    color = "grey22"
+  ) +
+  theme( ##Here edits the text size of the x and y and titles
+    axis.text.x = element_text(size = 20, color = "#00324a"),##text of the x variable
+    axis.text.y  = element_text(size = 15, color = "#00324a85"),
+    axis.title.x = element_text(size = 16, face = "bold", hjust = 0.5, color = "#00324a"),##x variable title
+    axis.title.y = element_text(size = 16, face = "bold", hjust = 0.5, color = "#00324a"),##y variable title
+    plot.title = element_text(size = 25, face = "bold", hjust = 0.5, color = "#00324a"), ##plot title, hjust is where its positioned
+    plot.subtitle = element_text(size = 17, face = "bold", hjust = 0.5, color = "#00324a85"), ##plot title, hjust is where its positioned
+    legend.position = "none" ##excludes the legend in the final output
+  ) +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 12)) + ##Wrapping labels if theyre too long/ dont  run into each other
+  labs ( ##labeling/ titles
+    x = "Quarter",
+    y = "Task Actions",
+    title = "Total Task Actions",
+    subtitle = "Employer Services- Year Review 2025"
+  )
+
+plot(newhirefile) ##redo its failing
+
+plot(newhirefileindividually) ##no values?
+
+plot(totalnewhires) ##good
+
+plot(companies) ##good
+
+plot(taskmanager)
+
+plot(status_count_managers)
+plot(taskmonthq4)
+plot(taskquarter)##NA Value
