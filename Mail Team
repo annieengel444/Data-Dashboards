@@ -1,0 +1,461 @@
+library(readxl)
+library(dplyr)
+library(magrittr)
+library(ggplot2)
+library(stringr)
+# library(ggthemes)
+
+address <- read_excel (
+  "address.xlsx",
+  sheet = 1
+)
+
+task <- read_excel (
+  "tasks.xlsx",
+  sheet = 1
+)
+
+addressfilter <- address %>%
+filter(quarter == "Q4 2025") %>%
+  filter(ROW_CREAT_USER != "JA6")
+
+address_counts <- addressfilter %>%
+  count(addressfilter$"Case Manager", addressfilter$addr_id, name = "address_count")
+
+address_counts <- address_counts %>%
+  rename(
+    manager = `addressfilter$"Case Manager"`)
+
+##case manager count per quarter
+addressfilternames <- address %>%
+  filter(ROW_CREAT_USER != "JA6")
+
+addressmanagerquarter <- addressfilternames %>%
+  group_by(`Case Manager`, quarter) %>%
+  summarise(status = n(), .groups = "drop")
+
+
+##light blue 0e85aa , 00324a , 93d2d1
+
+DCS_colors <- c("#64223f85","#19285785","#709f8785","#e2b77d85","#c57c5985")
+DCS_colors2 <- c("#c57c5985","#19285785","#64223f85","#709f8785","#e2b77d85")
+DCS_colors3 <- c("#c57c5985","#19285785","#709f8785","#1f78b485","#64223f85","#e2b77d85","#a6cee385", "#167FA885","#9ad3d285" )
+DCS_colors4 <- c("#4E7D6885", "#A8D9D885", "#B98A9185", "#9BC8DA85", "#E8BDC085", "#7DB69585", "#B7E0DF85", "#FCC77285", "#167FA885" )
+DCS_colorscontrast <- c("#4E7D6885", "#E3D0D3", "#3791B485")
+
+##Workers and total counts of address updates
+address_count_graph <- ggplot(address_counts, aes(x = manager, y = address_count, fill = manager)) +  ##color = manager##color = manager Note color = manager
+  geom_col(color = "grey22") + ##Type of graph fill = "lightgrey"
+  theme_classic() + ##Graph overall theme
+  scale_fill_manual(values = DCS_colors3) +
+geom_text ( ##Data count labels on the bars
+  aes(label = scales::comma(address_count)),
+  vjust = -0.3,
+  size = 10,
+  color = "grey22"
+) +
+  theme( ##Here edits the text size of the x and y and titles
+    axis.text.x = element_text(size = 20, color = "#00324a"),##text of the x variable
+    axis.text.y  = element_text(size = 15, color = "#00324a85"),
+    axis.title.x = element_text(size = 16, face = "bold", hjust = 0.5, color = "#00324a"),##x variable title
+    axis.title.y = element_text(size = 16, face = "bold", hjust = 0.5, color = "#00324a"),##y variable title
+    plot.title = element_text(size = 25, face = "bold", hjust = 0.5, color = "#00324a"), ##plot title, hjust is where its positioned
+    plot.subtitle = element_text(size = 17, face = "bold", hjust = 0.5, color = "#00324a85"), ##plot title, hjust is where its positioned
+     legend.position = "none" ##excludes the legend in the final output
+  ) +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 12)) + ##Wrapping labels if theyre too long/ dont  run into each other
+  labs ( ##labeling/ titles
+    x = "Worker",
+    y = "Cleaned Addresses",
+    title = "Address Activity- Individual Workers",
+    subtitle = "Central Mail Team- 4th Quarter 2025"
+  )
+
+plot(address_count_graph) ##preview the plot
+
+ggsave( ##print the plot
+  filename = paste0("Address Counts 4", ".png"),
+  plot = address_count_graph ,
+  width = 30,
+  height = 15,
+  dpi = 400
+)
+##totcal count of address clean up by primary versus secondary
+###count of each address id by manager grouped by status
+
+status <- addressfilter %>%
+  group_by(`Case Manager`, STAT_CD) %>%
+  summarise(status = n(), .groups = "drop") ##n() is counting each row not distinct
+
+statusclean <- status %>%
+  rename(
+    manager = `Case Manager`) %>%
+   filter(STAT_CD %in% c("Primary", "Secondary"))
+
+address_status_graph <- ggplot(statusclean, aes(x = manager, y = status, fill = STAT_CD)) +  ##color = manager##color = manager Note color = manager
+  geom_bar(position="dodge", stat="identity") + ##Type of graph fill = "lightgrey"
+  theme_classic() + ##Graph overall theme
+  scale_fill_manual(values = DCS_colorscontrast) +
+  geom_text ( ##Data count labels on the bars
+    aes(label = status),
+    vjust = -0.3,
+    size = 10,
+    position = position_dodge(0.9),
+    color = "grey22"
+  ) +
+  theme( ##Here edits the text size of the x and y and titles
+    axis.text.x = element_text(size = 20, color = "#00324a"),##text of the x variable
+    axis.text.y  = element_text(size = 15, color = "#00324a85"),
+    axis.title.x = element_text(size = 16, face = "bold", hjust = 0.5, color = "#00324a"),##x variable title
+    axis.title.y = element_text(size = 16, face = "bold", hjust = 0.5, color = "#00324a"),##y variable title
+    plot.title = element_text(size = 25, face = "bold", hjust = 0.5, color = "#00324a"), ##plot title, hjust is where its positioned
+    plot.subtitle = element_text(size = 17, face = "bold", hjust = 0.5, color = "#00324a85"), ##plot title, hjust is where its positioned
+   legend.position = "bottom",
+   legend.key.size = unit(3, "lines")##legend position on bottom
+  ) +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 12)) + ##Wrapping labels if theyre too long/ dont  run into each other
+  labs ( ##labeling/ titles
+    x = "Worker",
+    y = "Cleaned Addresses",
+    title = "Address Activity Broken Down by Address Status- Individual Workers",
+    subtitle = "Central Mail Team- 4th Quarter 2025",
+    fill = "Status"
+  )
+
+
+plot(address_status_graph)
+
+ggsave( ##print the plot
+  filename = paste0("Address Counts with Status", ".png"),
+  plot = address_status_graph,
+  width = 30,
+  height = 15,
+  dpi = 400
+)
+
+##Task Count by Worker
+taskfilter <- task %>%
+  filter(quarter == "Q4 2025") %>%
+  filter(!`Case Manager Name` %in% c("CHRIS TILGNER", "JONATHAN ANSELMO-BAUTISTA", "MARISOL QUIRINO")) %>%
+  filter(!TASK_TYPE_EXTID %in% "CS040")
+
+task_clean <- taskfilter %>%
+  rename(
+    manager = `Case Manager Name`)
+
+taskcounts <- task_clean %>%
+  group_by(manager, RSN_CD) %>%
+  summarise(status = n(), .groups = "drop") ##n() is counting each row not distinct
+
+task_count_managers <- ggplot(taskcounts, aes(x = manager, y = status, fill = RSN_CD)) +  ##color = manager##color = manager Note color = manager
+  geom_bar(position="dodge", stat="identity") + ##Type of graph fill = "lightgrey"
+  theme_classic() + ##Graph overall theme
+  scale_fill_manual(values = DCS_colors) +
+  geom_text ( ##Data count labels on the bars
+    aes(label = status),
+    vjust = -0.3,
+    size = 10,
+    position = position_dodge(0.9),
+    color = "grey22"
+  ) +
+  theme( ##Here edits the text size of the x and y and titles
+    axis.text.x = element_text(size = 20, color = "#00324a"),##text of the x variable
+    axis.text.y  = element_text(size = 15, color = "#00324a85"),
+    axis.title.x = element_text(size = 16, face = "bold", hjust = 0.5, color = "#00324a"),##x variable title
+    axis.title.y = element_text(size = 16, face = "bold", hjust = 0.5, color = "#00324a"),##y variable title
+    plot.title = element_text(size = 25, face = "bold", hjust = 0.5, color = "#00324a"), ##plot title, hjust is where its positioned
+    plot.subtitle = element_text(size = 17, face = "bold", hjust = 0.5, color = "#00324a85"), ##plot title, hjust is where its positioned
+    legend.position = "bottom",
+    legend.key.size = unit(3, "lines")##legend position on bottom
+  ) +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 12)) + ##Wrapping labels if theyre too long/ dont  run into each other
+  labs ( ##labeling/ titles
+    x = "Worker",
+    y = "Task Actions Worked",
+    title = "Task Activity - Individual Workers",
+    subtitle = "Central Mail Team- 4th Quarter 2025",
+    fill = "Status"
+  )
+
+
+plot(task_count_managers)
+
+ggsave( ##print the plot
+  filename = paste0("Task Counts Per Manager", ".png"),
+  plot = task_count_managers,
+  width = 30,
+  height = 15,
+  dpi = 400
+)
+##CS040 TASK none for Q4
+taskfilter2 <- task %>%
+  filter(quarter == "Q4 2025") %>%
+  filter(!`Case Manager Name` %in% c("CHRIS TILGNER", "JONATHAN ANSELMO-BAUTISTA", "MARISOL QUIRINO")) %>%
+  filter(TASK_TYPE_EXTID %in% "CS040")
+
+task_clean2 <- taskfilter2 %>%
+  rename(
+    manager = `Case Manager Name`)
+
+taskcounts2 <- task_clean2 %>%
+  group_by(manager, RSN_CD) %>%
+  summarise(status = n(), .groups = "drop") ##n() is counting each row not distinct
+
+##quarterly review begins
+addressfiltertotal <- address %>%
+  filter(ROW_CREAT_USER != "JA6")
+
+address_countstotal <- addressfiltertotal %>%
+  count(quarter, name = "udpatecountaddress")
+
+address_count_quarters <- ggplot(address_countstotal, aes(x = quarter, y = udpatecountaddress, fill = quarter)) +  ##color = manager##color = manager Note color = manager
+  geom_col(color = "grey22") + ##Type of graph fill = "lightgrey"
+  theme_classic() + ##Graph overall theme
+  scale_fill_manual(values = DCS_colors4) +
+  geom_text ( ##Data count labels on the bars
+    aes(label = udpatecountaddress, quarter),
+    vjust = -0.3,
+    size = 10,
+    color = "grey22"
+  ) +
+  theme( ##Here edits the text size of the x and y and titles
+    axis.text.x = element_text(size = 20, color = "#00324a"),##text of the x variable
+    axis.text.y  = element_text(size = 15, color = "#00324a85"),
+    axis.title.x = element_text(size = 16, face = "bold", hjust = 0.5, color = "#00324a"),##x variable title
+    axis.title.y = element_text(size = 16, face = "bold", hjust = 0.5, color = "#00324a"),##y variable title
+    plot.title = element_text(size = 25, face = "bold", hjust = 0.5, color = "#00324a"), ##plot title, hjust is where its positioned
+    plot.subtitle = element_text(size = 17, face = "bold", hjust = 0.5, color = "#00324a85"), ##plot title, hjust is where its positioned
+    legend.position = "none" ##excludes the legend in the final output
+  ) +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 12)) + ##Wrapping labels if theyre too long/ dont  run into each other
+  labs ( ##labeling/ titles
+    x = "Quarter",
+    y = "Addresses Cleaned",
+    title = "Address Activity- Central Mail Team",
+    subtitle = "Year Review 2025"
+  )
+
+plot(address_count_quarters) ##preview the plot
+
+ggsave( ##print the plot
+  filename = paste0("Address Counts Whole Team", ".png"),
+  plot = address_count_quarters ,
+  width = 30,
+  height = 15,
+  dpi = 400
+)
+
+##Primary Versus Secondary per Quarter
+
+status2 <- addressfiltertotal %>%
+  group_by(quarter, STAT_CD) %>%
+  summarise(status = n(), .groups = "drop") ##n() is counting each row not distinct
+
+  statusclean2 <- status2 %>%
+    filter(STAT_CD %in% c("Primary", "Secondary"))
+
+  address_status_wholeteam <- ggplot(statusclean2, aes(x = quarter, y = status, fill = STAT_CD)) +  ##color = manager##color = manager Note color = manager
+    geom_bar(position="dodge", stat="identity") + ##Type of graph fill = "lightgrey"
+    theme_classic() + ##Graph overall theme
+    scale_fill_manual(values = DCS_colorscontrast) +
+    geom_text ( ##Data count labels on the bars
+      aes(label = status),
+      vjust = -0.3,
+      size = 10,
+      position = position_dodge(0.9),
+      color = "grey22"
+    ) +
+    theme( ##Here edits the text size of the x and y and titles
+      axis.text.x = element_text(size = 20, color = "#00324a"),##text of the x variable
+      axis.text.y  = element_text(size = 15, color = "#00324a85"),
+      axis.title.x = element_text(size = 16, face = "bold", hjust = 0.5, color = "#00324a"),##x variable title
+      axis.title.y = element_text(size = 16, face = "bold", hjust = 0.5, color = "#00324a"),##y variable title
+      plot.title = element_text(size = 25, face = "bold", hjust = 0.5, color = "#00324a"), ##plot title, hjust is where its positioned
+      plot.subtitle = element_text(size = 17, face = "bold", hjust = 0.5, color = "#00324a85"), ##plot title, hjust is where its positioned
+      legend.position = "bottom",
+      legend.key.size = unit(4, "lines")##legend position on bottom
+    ) +
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 12)) + ##Wrapping labels if theyre too long/ dont  run into each other
+    labs ( ##labeling/ titles
+      x = "Quarter",
+      y = "Cleaned Addresses",
+      title = "Address Cleanup Broken Down by Address Status- Central Mail Team",
+      subtitle = "Year Review 2025",
+      fill = "Status"
+    )
+
+  plot(address_status_wholeteam)
+
+  ggsave( ##print the plot
+    filename = paste0("Address Counts with Status Quarters", ".png"),
+    plot = address_status_wholeteam,
+    width = 30,
+    height = 15,
+    dpi = 400
+  )
+###TASK COUNTS BY QUARTER
+  taskfilter2 <- task %>%
+    filter(!`Case Manager Name` %in% c("CHRIS TILGNER", "JONATHAN ANSELMO-BAUTISTA", "MARISOL QUIRINO")) %>%
+    filter(!TASK_TYPE_EXTID %in% "CS040")
+
+  taskcounts2 <- taskfilter2 %>%
+    group_by(quarter, RSN_CD) %>%
+    summarise(status = n(), .groups = "drop") ##n() is counting each row not distinct
+
+
+  task_count_allquarters <- ggplot(taskcounts2, aes(x = quarter, y = status, fill = RSN_CD)) +  ##color = manager##color = manager Note color = manager
+    geom_bar(position="dodge", stat="identity") + ##Type of graph fill = "lightgrey"
+    theme_classic() + ##Graph overall theme
+    scale_fill_manual(values = DCS_colorscontrast) +
+    geom_text ( ##Data count labels on the bars
+      aes(label = status),
+      vjust = -0.3,
+      size = 10,
+      position = position_dodge(0.9),
+      color = "grey22"
+    ) +
+    theme( ##Here edits the text size of the x and y and titles
+      axis.text.x = element_text(size = 20, color = "#00324a"),##text of the x variable
+      axis.text.y  = element_text(size = 15, color = "#00324a85"),
+      axis.title.x = element_text(size = 16, face = "bold", hjust = 0.5, color = "#00324a"),##x variable title
+      axis.title.y = element_text(size = 16, face = "bold", hjust = 0.5, color = "#00324a"),##y variable title
+      plot.title = element_text(size = 25, face = "bold", hjust = 0.5, color = "#00324a"), ##plot title, hjust is where its positioned
+      plot.subtitle = element_text(size = 17, face = "bold", hjust = 0.5, color = "#00324a85"), ##plot title, hjust is where its positioned
+      legend.position = "bottom",
+      legend.key.size = unit(3, "lines")##legend position on bottom
+    ) +
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 12)) + ##Wrapping labels if theyre too long/ dont  run into each other
+    labs ( ##labeling/ titles
+      x = "Quarter",
+      y = "Task Actions",
+      title = "Task Activity - Central Mail Team",
+      subtitle = "Year Review 2025",
+      fill = "Status"
+    )
+
+  plot(task_count_allquarters)
+
+  ggsave( ##print the plot
+    filename = paste0("Task Counts Per Quarter", ".png"),
+    plot = task_count_allquarters,
+    width = 30,
+    height = 15,
+    dpi = 400
+  )
+
+
+  task_countstotal <- taskfilter2 %>%
+    count(quarter, name = "tasktotal")
+
+##just total task counts
+  task_count_allquarterstotal <- ggplot(task_countstotal, aes(x = quarter, y = tasktotal, fill = quarter)) +  ##color = manager##color = manager Note color = manager
+    geom_col(color = "grey22") + ##Type of graph fill = "lightgrey"
+    theme_classic() + ##Graph overall theme
+    scale_fill_manual(values = DCS_colors3) +
+    geom_text ( ##Data count labels on the bars
+      aes(label = tasktotal),
+      vjust = -0.3,
+      size = 10,
+      position = position_dodge(0.9),
+      color = "grey22"
+    ) +
+    theme( ##Here edits the text size of the x and y and titles
+      axis.text.x = element_text(size = 20, color = "#00324a"),##text of the x variable
+      axis.text.y  = element_text(size = 15, color = "#00324a85"),
+      axis.title.x = element_text(size = 16, face = "bold", hjust = 0.5, color = "#00324a"),##x variable title
+      axis.title.y = element_text(size = 16, face = "bold", hjust = 0.5, color = "#00324a"),##y variable title
+      plot.title = element_text(size = 25, face = "bold", hjust = 0.5, color = "#00324a"), ##plot title, hjust is where its positioned
+      plot.subtitle = element_text(size = 17, face = "bold", hjust = 0.5, color = "#00324a85"), ##plot title, hjust is where its positioned
+      legend.position = "none",
+    ) +
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 12)) + ##Wrapping labels if theyre too long/ dont  run into each other
+    labs ( ##labeling/ titles
+      x = "Quarter",
+      y = "Task Actions",
+      title = "Task Activity - Central Mail Team",
+      subtitle = "Year Review 2025"
+    )
+
+  plot(task_count_allquarterstotal)
+
+  ggsave( ##print the plot
+    filename = paste0("Task Counts Per Quarter", ".png"),
+    plot = task_count_allquarters,
+    width = 30,
+    height = 15,
+    dpi = 400
+  )
+
+  address_quarterm_graph <- ggplot(addressmanagerquarter, aes(fill = quarter, x = `Case Manager`,  y = status)) +  ##color = manager##color = manager Note color = manager
+    geom_col(position = position_dodge(width = 0.8), width = 0.7)  + ##Type of graph fill = "lightgrey"
+    theme_classic() + ##Graph overall theme
+    scale_fill_manual(values = DCS_colors3) +
+    geom_text ( ##Data count labels on the bars
+      aes(label = scales::comma(status)),
+      vjust = -0.3,
+      size = 10,
+      color = "grey22"
+    ) +
+    theme( ##Here edits the text size of the x and y and titles
+      axis.text.x = element_text(size = 20, color = "#00324a"),##text of the x variable
+      axis.text.y  = element_text(size = 15, color = "#00324a85"),
+      axis.title.x = element_text(size = 16, face = "bold", hjust = 0.5, color = "#00324a"),##x variable title
+      axis.title.y = element_text(size = 16, face = "bold", hjust = 0.5, color = "#00324a"),##y variable title
+      plot.title = element_text(size = 25, face = "bold", hjust = 0.5, color = "#00324a"), ##plot title, hjust is where its positioned
+      plot.subtitle = element_text(size = 17, face = "bold", hjust = 0.5, color = "#00324a85"), ##plot title, hjust is where its positioned
+      legend.position = "bottom",
+      legend.key.size = unit(3, "lines")
+    ) +
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 12)) + ##Wrapping labels if theyre too long/ dont  run into each other
+    labs ( ##labeling/ titles
+      x = "Worker",
+      y = "Cleaned Addresses",
+      title = "Address Activity- Individual Workers",
+      subtitle = "Central Mail Team- Year 2025 Quarter Review"
+    )
+
+plot(address_quarterm_graph)
+
+taskfilteryear <- task %>%
+  filter(!`Case Manager Name` %in% c("CHRIS TILGNER", "JONATHAN ANSELMO-BAUTISTA", "MARISOL QUIRINO")) %>%
+  filter(!TASK_TYPE_EXTID %in% "CS040")
+
+task_cleanyear <- taskfilteryear %>%
+  rename(
+    manager = `Case Manager Name`)
+
+taskcountsyear <- task_cleanyear %>%
+  group_by(manager, quarter) %>%
+  summarise(status = n(), .groups = "drop") ##n() is counting each row not distinct
+
+pd <- position_dodge2(width = 0.8, preserve = "single")
+
+task_quarterm_graph <- ggplot(taskcountsyear, aes(fill = quarter, x = manager,  y = status)) +  ##color = manager##color = manager Note color = manager
+  geom_col(position = pd, width = 0.7)  + ##Type of graph fill = "lightgrey"
+  theme_classic() + ##Graph overall theme
+  scale_fill_manual(values = DCS_colors3) +
+  geom_text ( ##Data count labels on the bars
+    aes(label = scales::comma(status)),
+    position = pd,
+    vjust = -0.3,
+    size = 10,
+    color = "grey22"
+  ) +
+  theme( ##Here edits the text size of the x and y and titles
+    axis.text.x = element_text(size = 20, color = "#00324a"),##text of the x variable
+    axis.text.y  = element_text(size = 15, color = "#00324a85"),
+    axis.title.x = element_text(size = 16, face = "bold", hjust = 0.5, color = "#00324a"),##x variable title
+    axis.title.y = element_text(size = 16, face = "bold", hjust = 0.5, color = "#00324a"),##y variable title
+    plot.title = element_text(size = 25, face = "bold", hjust = 0.5, color = "#00324a"), ##plot title, hjust is where its positioned
+    plot.subtitle = element_text(size = 17, face = "bold", hjust = 0.5, color = "#00324a85"), ##plot title, hjust is where its positioned
+    legend.position = "bottom",
+    legend.key.size = unit(3, "lines")
+  ) +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 12)) + ##Wrapping labels if theyre too long/ dont  run into each other
+  labs ( ##labeling/ titles
+    x = "Worker",
+    y = "Task Activity",
+    title = "Task Activity- Individual Workers",
+    subtitle = "Central Mail Team- Year 2025 Quarter Review"
+  )
+plot(task_quarterm_graph)
