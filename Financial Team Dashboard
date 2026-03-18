@@ -1,0 +1,932 @@
+---
+title: "Finacial Team Dashboard"
+format: dashboard
+theme: mintly
+---
+
+```{r, Echo = FALSE}
+	library(readxl)
+	 library(dplyr)
+	 library(magrittr)
+	library(ggplot2)
+ library(stringr)
+library(bslib)
+library(bsicons)
+library(scales)
+library(tidyverse)
+# taskall <- read_excel (
+# "TaskswFM026MasterQ1.2026.xlsx",
+#   sheet = 1)
+task <- read_excel (
+"TaskMasterQ1.2026.xlsx",
+  sheet = 1)
+fm26<- read_excel (
+"FM026MasterQ1.2026.xlsx",
+  sheet = 1)
+rein<- read_excel (
+"ReinitiateMasterQ1.2026.xlsx",
+  sheet = 1)
+account<- read_excel (
+"AccountsMasterQ1.2026.xlsx",
+  sheet = 1)
+sus<- read_excel (
+"SuspendedMasterQ1.2026.xlsx",
+  sheet = 1)
+```
+
+```{r, ECHO = FALSE}
+###ACCOUNTING TECHNICIANS
+AccountingTechsc <- task %>%
+  group_by(username, quarter, team, action, month_cat) %>%
+  summarise(n = n(), .groups = "drop")  %>%
+  filter(team == "Accounting Technicians") %>%
+  filter(quarter == "Q1 2026") %>%
+  group_by(username, month_cat) %>%
+  mutate(total_user_month = sum(n)) %>%
+  ungroup()
+
+
+accountingtechtask <- ggplot(
+  AccountingTechsc,
+  aes(x = n, y = username, fill = action)
+) +
+  geom_col() +
+  theme_light() +
+  facet_wrap(~ factor(month_cat, levels = c("Jan", "Feb")), scales = "free_x") +
+ geom_text(
+    aes(label = n),        
+    position = position_stack(vjust = 0.5), 
+    size = 12,
+    color = "black",
+    check_overlap = TRUE
+  ) +
+  scale_fill_brewer(palette = "Set3") +
+  scale_x_continuous(expand = expansion(mult = c(0, 0.02))) +  # small right padding
+  scale_y_discrete(labels = function(x) str_wrap(x, width = 25)) +
+  theme(
+    axis.text.x = element_text(size = 30, face = "bold"),
+    axis.text.y = element_text(size = 25, face = "bold"),
+    axis.title.x = element_text(size = 30, face = "bold", hjust = 0.5),
+    axis.title.y = element_text(size = 30, face = "bold", hjust = 0.5),
+    plot.title = element_text(size = 50, face = "bold", hjust = 0.5),
+    plot.subtitle = element_text(size = 40, face = "bold", hjust = 0.5),
+    legend.text = element_text(size = 40),
+    strip.text = element_text(size = 45),
+    legend.title = element_text(size = 45),
+    legend.position = "bottom"
+  ) +
+  labs(
+    x = "Count of Task Actions Taken",   # x is the numeric count
+    y = "Case Manager",                  # y lists usernames
+    title = "Task Actions",
+    subtitle = "Accounting Technicians",
+    fill = "Action Type"
+  ) 
+###CASE MANAGERS
+
+CaseManagersc <- task %>%
+  group_by(username, quarter, team, action, month_cat) %>%
+  summarise(n = n(), .groups = "drop")  %>%
+  filter(team == "Case Manager") %>%
+  filter(quarter == "Q1 2026") %>%
+ group_by(username, month_cat) %>%
+  mutate(total_user_month = sum(n)) %>%   
+  ungroup()
+
+
+casemanagertask <- ggplot(
+  CaseManagersc,
+  aes(x = n, y = username, fill = action)
+) +
+  geom_col() +  
+  theme_light() +
+  facet_wrap(~ factor(month_cat, levels = c("Jan", "Feb")), scales = "free_x") +
+ geom_text(
+    aes(label = n),        
+    position = position_stack(vjust = 0.5), 
+    size = 12,
+    color = "black",
+    check_overlap = TRUE
+  ) +
+  scale_fill_brewer(palette = "PiYG") +
+  scale_x_continuous(expand = expansion(mult = c(0, 0.02))) +  # small right padding
+  scale_y_discrete(labels = function(x) str_wrap(x, width = 25)) +
+  theme(
+    axis.text.x = element_text(size = 30, face = "bold"),
+    axis.text.y = element_text(size = 25, face = "bold"),
+    axis.title.x = element_text(size = 30, face = "bold", hjust = 0.5),
+    axis.title.y = element_text(size = 30, face = "bold", hjust = 0.5),
+    plot.title = element_text(size = 50, face = "bold", hjust = 0.5),
+    plot.subtitle = element_text(size = 40, face = "bold", hjust = 0.5),
+    legend.text = element_text(size = 40),
+    strip.text = element_text(size = 45),
+    legend.title = element_text(size = 45),
+    legend.position = "bottom"
+  ) +
+  labs(
+    x = "Count of Task Actions Taken",   # x is the numeric count
+    y = "Case Manager",                  # y lists usernames
+    title = "Task Actions",
+    subtitle = "Case Managers",
+    fill = "Action Type"
+  )
+
+
+###CASE ADJUSTORS
+caseadjustorsc <- task %>%
+  group_by(username, quarter, team, action, month_cat) %>%
+  summarise(n = n(), .groups = "drop")  %>%
+  filter(team == "Case Adjustor") %>%
+  filter(quarter == "Q1 2026") %>%
+  group_by(username, month_cat) %>%
+  mutate(total_user_month = sum(n)) %>%
+  ungroup()
+
+caseadjustortask  <- ggplot(
+  caseadjustorsc ,
+  aes(x = n, y = username, fill = action)
+) +
+  geom_col() +
+  theme_light() +
+  facet_wrap(~ factor(month_cat, levels = c("Jan", "Feb")), scales = "free_x") +
+ geom_text(
+    aes(label = n),        
+    position = position_stack(vjust = 0.5), 
+    size = 12,
+    color = "black",
+    check_overlap = TRUE
+  ) +
+  scale_fill_brewer(palette = "Paired") +
+  scale_x_continuous(expand = expansion(mult = c(0, 0.02))) +  # small right padding
+  scale_y_discrete(labels = function(x) str_wrap(x, width = 25)) +
+  theme(
+    axis.text.x = element_text(size = 30, face = "bold"),
+    axis.text.y = element_text(size = 25, face = "bold"),
+    axis.title.x = element_text(size = 30, face = "bold", hjust = 0.5),
+    axis.title.y = element_text(size = 30, face = "bold", hjust = 0.5),
+    plot.title = element_text(size = 50, face = "bold", hjust = 0.5),
+    plot.subtitle = element_text(size = 40, face = "bold", hjust = 0.5),
+    legend.text = element_text(size = 40),
+    strip.text = element_text(size = 45),
+    legend.title = element_text(size = 45),
+    legend.position = "bottom"
+  ) +
+  labs(
+    x = "Count of Task Actions Taken",   # x is the numeric count
+    y = "Case Manager",                  # y lists usernames
+    title = "Task Actions",
+    subtitle = "Case Adjustors",
+    fill = "Action Type"
+  ) 
+
+###LOCATORS
+locatorc <- task %>%
+  group_by(username, quarter, team, action, month_cat) %>%
+  summarise(n = n(), .groups = "drop")  %>%
+  filter(team == "Locator") %>%
+  filter(quarter == "Q1 2026")
+
+
+locatortask  <- ggplot(
+  locatorc ,
+  aes(x = n, y = username, fill = action)
+) +
+  geom_col() +
+  theme_light() +
+  facet_wrap(~ factor(month_cat, levels = c("Jan", "Feb")), scales = "free_x") +
+ geom_text(
+    aes(label = n),        
+    position = position_stack(vjust = 0.5), 
+    size = 12,
+    color = "black",
+    check_overlap = TRUE
+  ) +
+  scale_fill_brewer(palette = "Dark2") +
+  scale_x_continuous(expand = expansion(mult = c(0, 0.02))) +  # small right padding
+  scale_y_discrete(labels = function(x) str_wrap(x, width = 25)) +
+  theme(
+    axis.text.x = element_text(size = 30, face = "bold"),
+    axis.text.y = element_text(size = 25, face = "bold"),
+    axis.title.x = element_text(size = 30, face = "bold", hjust = 0.5),
+    axis.title.y = element_text(size = 30, face = "bold", hjust = 0.5),
+    plot.title = element_text(size = 50, face = "bold", hjust = 0.5),
+    plot.subtitle = element_text(size = 40, face = "bold", hjust = 0.5),
+    legend.text = element_text(size = 40),
+    strip.text = element_text(size = 45),
+    legend.title = element_text(size = 45),
+    legend.position = "bottom"
+  ) +
+  labs(
+    x = "Count of Task Actions Taken",   # x is the numeric count
+    y = "Case Manager",                  # y lists usernames
+    title = "Task Actions",
+    subtitle = "Locators",
+    fill = "Action Type"
+  )
+
+```
+
+# Origin Tasks
+
+## Row {height="20%"}
+
+```{r, ECHO = FALSE}
+##Counts per month
+
+countspermonthj <- task %>%
+  filter(quarter == "Q1 2026") %>%
+  filter(month_cat == "Jan") %>%
+  count(nmonth = month_cat)
+countspermonthf <- task %>%
+  filter(quarter == "Q1 2026") %>%
+  filter(month_cat == "Feb") %>%
+  count(nmonth = month_cat)
+
+
+```
+
+### {width = 20%}
+
+``` {r}
+		value_box(
+		title = "Total Tasks January:", 
+		value = 9195,
+		showcase = bsicons::bs_icon("bank2"),
+		theme =  value_box_theme(
+    bg = "#6A1B9A",   # custom purple
+    fg = "white"      # text color
+  )
+)
+```
+
+### {width = 20%}
+
+``` {r}
+		value_box(
+		title = "Total Tasks February:", 
+		value = 4638,
+		showcase = bsicons::bs_icon("graph-up-arrow"),
+		theme =  value_box_theme(
+    bg = "#6A1B9A",   # custom purple
+    fg = "white"      # text color
+  )
+)
+```
+
+### {width = 20%}
+
+``` {r}
+		value_box(
+		title = "Total Tasks March:", 
+		value = 0,
+		showcase = bsicons::bs_icon("balloon"),
+		theme =  value_box_theme(
+    bg = "#6A1B9A",   # custom purple
+    fg = "white"      # text color
+  )
+)
+```
+
+### {width = 20%}
+``` {r}
+		value_box(
+		title = "Total Tasks 1st Quarter:", 
+		value = 13833,
+		showcase = bsicons::bs_icon("award"),
+		theme = value_box_theme(
+    bg = "#6A1B9A",   # custom purple
+    fg = "white"      # text color
+  )
+)
+```
+
+
+## Row {height="80%"} {.tabset}
+
+### Accounting Technicians
+
+```{r, fig.width=60, fig.height=20}
+	plot(accountingtechtask) 
+```
+
+### Case Managers
+
+```{r, fig.width=67, fig.height=25}
+	plot(casemanagertask) 
+```
+
+### Case Adjustors
+
+```{r, fig.width=60, fig.height=15}
+	plot(caseadjustortask) 
+```
+
+### Locators
+
+```{r, fig.width=60, fig.height=15}
+	plot(locatortask) 
+```
+
+# Electronic Accounts
+
+## Row {height="20%"}
+
+### {width = 20%}
+
+``` {r}
+		value_box(
+		title = "Account Actions January:", 
+		value = "1,600",
+		showcase = bsicons::bs_icon("bank2"),
+		theme =  value_box_theme(
+    bg = "#6A1B9A",   # custom purple
+    fg = "white"      # text color
+  )
+)
+```
+
+### {width = 20%}
+
+``` {r}
+		value_box(
+		title = "Account Actions February:", 
+		value = "1,008",
+		showcase = bsicons::bs_icon("graph-up-arrow"),
+		theme =  value_box_theme(
+    bg = "#6A1B9A",   # custom purple
+    fg = "white"      # text color
+  )
+)
+```
+
+### {width = 20%}
+
+``` {r}
+		value_box(
+		title = "Account Actions March:",  
+		value = 0,
+		showcase = bsicons::bs_icon("balloon"),
+		theme =  value_box_theme(
+    bg = "#6A1B9A",   # custom purple
+    fg = "white"      # text color
+  )
+)
+```
+
+### {width = 20%}
+``` {r}
+		value_box(
+		title = "Account Actions Quarter 1:", 
+		value = 0,
+		showcase = bsicons::bs_icon("award"),
+		theme = value_box_theme(
+    bg = "#6A1B9A",   # custom purple
+    fg = "white"      # text color
+  )
+)
+```
+
+## Row {height="80%"} {.tabset}
+
+```{r, ECHO = FALSE}
+electroniccounts <- account %>%
+  filter(quarter == "Q1 2026") %>%
+  group_by(username, status, month_cat) %>%
+  summarise(n = n(), .groups = "drop")
+
+electronicreat <- electroniccounts %>%
+  filter(status == "Created")
+
+electroniccreated<- ggplot(
+  electronicreat,
+  aes(x = n, y = username, fill = username)
+) +
+  geom_col() +
+  theme_light() +
+  facet_wrap(~ factor(month_cat, levels = c("Jan", "Feb")), scales = "free_x") +
+  geom_text(
+    aes(x = n, y = username, label = n),
+    inherit.aes = FALSE,
+    size = 12,
+    hjust = 1.02,
+    color = "black"
+  ) +
+  scale_fill_brewer(palette = "Blues") +
+  scale_x_continuous(expand = expansion(mult = c(0, 0.02))) +  # small right padding
+  scale_y_discrete(labels = function(x) str_wrap(x, width = 25)) +
+  theme(
+    axis.text.x = element_text(size = 30, face = "bold"),
+    axis.text.y = element_text(size = 25, face = "bold"),
+    axis.title.x = element_text(size = 30, face = "bold", hjust = 0.5),
+    axis.title.y = element_text(size = 30, face = "bold", hjust = 0.5),
+    plot.title = element_text(size = 50, face = "bold", hjust = 0.5),
+    plot.subtitle = element_text(size = 40, face = "bold", hjust = 0.5),
+    legend.text = element_text(size = 40),
+    strip.text = element_text(size = 45),
+    legend.title = element_text(size = 45),
+    legend.position = "none"
+  ) +
+  labs(
+    x = "Created Accounts",   # x is the numeric count
+    y = "Case Manager",                  # y lists usernames
+    title = "Created Electronic Accounts"
+  ) 
+
+electronicu <- electroniccounts %>%
+  filter(status == "Updated")
+
+electronicupdated<- ggplot(
+  electronicu,
+  aes(x = n, y = username, fill = username)
+) +
+  geom_col() +
+  theme_light() +
+  facet_wrap(~ factor(month_cat, levels = c("Jan", "Feb")), scales = "free_x") +
+  geom_text(
+    aes(x = n, y = username, label = n),
+    inherit.aes = FALSE,
+    size = 12,
+    hjust = 1.02,
+    color = "black"
+  ) +
+  scale_fill_brewer(palette = "PuGuBn") +
+  scale_x_continuous(expand = expansion(mult = c(0, 0.02))) +  # small right padding
+  scale_y_discrete(labels = function(x) str_wrap(x, width = 25)) +
+  theme(
+    axis.text.x = element_text(size = 30, face = "bold"),
+    axis.text.y = element_text(size = 25, face = "bold"),
+    axis.title.x = element_text(size = 30, face = "bold", hjust = 0.5),
+    axis.title.y = element_text(size = 30, face = "bold", hjust = 0.5),
+    plot.title = element_text(size = 50, face = "bold", hjust = 0.5),
+    plot.subtitle = element_text(size = 40, face = "bold", hjust = 0.5),
+    legend.text = element_text(size = 40),
+    strip.text = element_text(size = 45),
+    legend.title = element_text(size = 45),
+    legend.position = "none"
+  ) +
+  labs(
+    x = "Updated Accounts",   # x is the numeric count
+    y = "Case Manager",                  # y lists usernames
+    title = "Updated Electronic Accounts"
+  )  
+```
+
+### Created Accounts
+```{r, fig.width=60, fig.height=15}
+	plot(electroniccreated) 
+```
+
+### Updated Accounts
+```{r, fig.width=60, fig.height=15}
+	plot(electronicupdated) 
+```
+
+# Specific Origin Tasks
+
+## Row {height="100%"} {.tabset}
+```{r, ECHO = FALSE}
+fms<- read_excel (
+  "FMMasterQ1.2026.xlsx",
+  sheet = 1)
+
+fmcounts <- fms %>%
+  filter(quarter == "Q1 2026") %>%
+  group_by(username, externalid, month_cat) %>%
+  summarise(n = n(), .groups = "drop")
+
+fm026 <- fmcounts %>%
+  filter(externalid == "FM026")
+
+fm916 <- fmcounts %>%
+  filter(externalid == "FM916") %>%
+  filter(! username %in% c("KARA NAEGELI", "HOLLIE BERSIN"))
+
+fm916plot<- ggplot(
+  fm916,
+  aes(x = n, y = username)
+) +
+  geom_col() +
+  theme_light() +
+  facet_wrap(~ factor(month_cat, levels = c("January", "February")), scales = "free_x") +
+  geom_text(
+    aes(x = n, y = username, label = n),
+    inherit.aes = FALSE,
+    size = 12,
+    hjust = 1.02,
+    color = "black"
+  ) +
+  scale_fill_brewer(palette = "Pastel2") +
+  scale_x_continuous(expand = expansion(mult = c(0, 0.02))) +  # small right padding
+  scale_y_discrete(labels = function(x) str_wrap(x, width = 25)) +
+  theme(
+    axis.text.x = element_text(size = 30, face = "bold"),
+    axis.text.y = element_text(size = 25, face = "bold"),
+    axis.title.x = element_text(size = 30, face = "bold", hjust = 0.5),
+    axis.title.y = element_text(size = 30, face = "bold", hjust = 0.5),
+    plot.title = element_text(size = 50, face = "bold", hjust = 0.5),
+    plot.subtitle = element_text(size = 40, face = "bold", hjust = 0.5),
+    legend.text = element_text(size = 40),
+    strip.text = element_text(size = 45),
+    legend.title = element_text(size = 45),
+    legend.position = "bottom"
+  ) +
+  labs(
+    x = "Task Actions Taken",   # x is the numeric count
+    y = "Case Manager",                  # y lists usernames
+    title = "FM916 Task"
+  ) 
+
+fm026plot<- ggplot(
+  fm026,
+  aes(x = n, y = username)
+) +
+  geom_col() +
+  theme_light() +
+  facet_wrap(~ factor(month_cat, levels = c("January", "February")), scales = "free_x") +
+  geom_text(
+    aes(x = n, y = username, label = n),
+    inherit.aes = FALSE,
+    size = 12,
+    hjust = 1.02,
+    color = "black"
+  ) +
+  scale_fill_brewer(palette = "Pastel2") +
+  scale_x_continuous(expand = expansion(mult = c(0, 0.02))) +  # small right padding
+  scale_y_discrete(labels = function(x) str_wrap(x, width = 25)) +
+  theme(
+    axis.text.x = element_text(size = 30, face = "bold"),
+    axis.text.y = element_text(size = 25, face = "bold"),
+    axis.title.x = element_text(size = 30, face = "bold", hjust = 0.5),
+    axis.title.y = element_text(size = 30, face = "bold", hjust = 0.5),
+    plot.title = element_text(size = 50, face = "bold", hjust = 0.5),
+    plot.subtitle = element_text(size = 40, face = "bold", hjust = 0.5),
+    legend.text = element_text(size = 40),
+    strip.text = element_text(size = 45),
+    legend.title = element_text(size = 45),
+    legend.position = "bottom"
+  ) +
+  labs(
+    x = "Task Actions Taken",   # x is the numeric count
+    y = "Case Manager",                  # y lists usernames
+    title = "FM026 Task"
+  )  
+```
+
+### FM026 Task
+```{r, fig.width=60, fig.height=15}
+	plot(fm026plot) 
+```
+
+### FM916 Task
+```{r, fig.width=60, fig.height=15}
+	plot(fm916plot) 
+```
+
+# Suspended Collections
+```{r, ECHO = FALSE}
+csuswork <- sus %>%
+  filter(quarter == "Q1 2026") %>%
+  group_by(Worker, month_cat) %>%
+  summarise(n = n(), .groups = "drop")
+avgsus <- sus %>%
+  filter(quarter == "Q1 2026") %>%
+  mutate(across(where(is.numeric), round, digits = 0)) %>%
+  group_by(Worker, month_cat) %>%
+  mutate(workeravg = mean(avgdays, na.rm = TRUE)) %>%
+  ungroup() %>%
+  distinct(Worker, workeravg, month_cat)
+avgsus2 <- avgsus %>%
+      mutate(across(where(is.numeric), round, digits = 0)) 
+
+sumsus <- sus %>%
+  filter(quarter == "Q1 2026") %>%
+  group_by(Worker, month_cat) %>%
+  summarise(
+      Total_Sum = sum(`Collection Amount`, na.rm = TRUE)
+      ) 
+counts <- ggplot(
+  csuswork,
+  aes(x = n, y = Worker)
+) +
+  geom_col() +
+  theme_light() +
+  facet_wrap(~ factor(month_cat, levels = c("Jan", "Feb", "Mar")), scales = "free_x") +
+ geom_text(
+    aes(label = n),        
+    position = position_stack(vjust = 0.5), 
+    size = 12,
+    color = "black",
+    check_overlap = TRUE
+  ) +
+  scale_fill_brewer(palette = "Pastel2") +
+  scale_x_continuous(expand = expansion(mult = c(0, 0.02))) +  # small right padding
+  scale_y_discrete(labels = function(x) str_wrap(x, width = 25)) +
+  theme(
+    axis.text.x = element_text(size = 30, face = "bold"),
+    axis.text.y = element_text(size = 25, face = "bold"),
+    axis.title.x = element_text(size = 30, face = "bold", hjust = 0.5),
+    axis.title.y = element_text(size = 30, face = "bold", hjust = 0.5),
+    plot.title = element_text(size = 50, face = "bold", hjust = 0.5),
+    plot.subtitle = element_text(size = 40, face = "bold", hjust = 0.5),
+    legend.text = element_text(size = 40),
+    strip.text = element_text(size = 45),
+    legend.title = element_text(size = 45),
+    legend.position = "bottom"
+  ) +
+  labs(
+    x = "Suspended Collection Worked",   # x is the numeric count
+    y = "Case Manager",                  # y lists usernames
+    title = "Count of Suspended Collections Worked"
+  ) 
+
+avgs <- ggplot(
+  avgsus2,
+  aes(x = workeravg, y = Worker)
+) +
+  geom_col() +
+  theme_light() +
+  facet_wrap(~ factor(month_cat, levels = c("Jan", "Feb", "Mar"))
+             ) +
+  geom_text(
+    aes(x = workeravg, y = Worker, label = workeravg),
+    inherit.aes = FALSE,
+    position = position_stack(vjust = 0.5), 
+    size = 12,
+    hjust = 1.02,
+    color = "black"
+  ) +
+  scale_fill_brewer(palette = "Pastel2") +
+  scale_x_continuous(expand = expansion(mult = c(0, 0.04))) +  # small right padding
+  scale_y_discrete(labels = function(x) str_wrap(x, width = 25)) +
+  theme(
+    axis.text.x = element_text(size = 30, face = "bold"),
+    axis.text.y = element_text(size = 25, face = "bold"),
+    axis.title.x = element_text(size = 30, face = "bold", hjust = 0.5),
+    axis.title.y = element_text(size = 30, face = "bold", hjust = 0.5),
+    plot.title = element_text(size = 50, face = "bold", hjust = 0.5),
+    plot.subtitle = element_text(size = 40, face = "bold", hjust = 0.5),
+    legend.text = element_text(size = 40),
+    strip.text = element_text(size = 45),
+    legend.title = element_text(size = 45),
+    legend.position = "bottom"
+  ) +
+  labs(
+    x = "Days in Suspension",   # x is the numeric count
+    y = "Case Manager",                  # y lists usernames
+    title = "Average Days a Collection Stayed in Suspense"
+  )
+sums <- ggplot(
+  sumsus,
+  aes(x = Total_Sum, y = Worker)
+) +
+  geom_col() +
+  theme_light() +
+  facet_wrap(~ factor(month_cat, levels = c("Jan", "Feb", "Mar")), scales = "free_x") +
+  geom_text(
+    aes(x = Total_Sum, y = Worker, label = dollar(Total_Sum)),
+    inherit.aes = FALSE,
+    size = 12,
+    hjust = 1.02,
+    color = "black"
+  ) +
+  scale_fill_brewer(palette = "Pastel2") +
+  scale_x_continuous(expand = expansion(mult = c(0, 0.02))) +  # small right padding
+  scale_y_discrete(labels = function(x) str_wrap(x, width = 25)) +
+  theme(
+    axis.text.x = element_text(size = 30, face = "bold"),
+    axis.text.y = element_text(size = 25, face = "bold"),
+    axis.title.x = element_text(size = 30, face = "bold", hjust = 0.5),
+    axis.title.y = element_text(size = 30, face = "bold", hjust = 0.5),
+    plot.title = element_text(size = 50, face = "bold", hjust = 0.5),
+    plot.subtitle = element_text(size = 40, face = "bold", hjust = 0.5),
+    legend.text = element_text(size = 40),
+    strip.text = element_text(size = 45),
+    legend.title = element_text(size = 45),
+    legend.position = "bottom"
+  ) +
+  labs(
+    x = "Transaction Amount",   # x is the numeric count
+    y = "Case Manager",                  # y lists usernames
+    title = "Transaction Amounts on Suspended Collections Worked"
+  ) + 
+    scale_x_continuous(labels = label_dollar())
+
+
+```
+
+## Row {height="40%"}
+
+### {width = 20%}
+
+``` {r}
+		value_box(
+		title = "Total Suspended Collections Worked:", 
+		value = 9195,
+		showcase = bsicons::bs_icon("bank2"),
+		theme =  value_box_theme(
+    bg = "#6A1B9A",   # custom purple
+    fg = "white"      # text color
+  )
+)
+```
+
+### {width = 20%}
+
+``` {r}
+		value_box(
+		title = "Overall Average Days in Suspension:", 
+		value = 9195,
+		showcase = bsicons::bs_icon("bank2"),
+		theme =  value_box_theme(
+    bg = "#6A1B9A",   # custom purple
+    fg = "white"      # text color
+  )
+)
+```
+
+### {width = 20%}
+
+``` {r}
+		value_box(
+		title = "Total Transaction Amount on Suspended Collections:", 
+		value = 9195,
+		showcase = bsicons::bs_icon("bank2"),
+		theme =  value_box_theme(
+    bg = "#6A1B9A",   # custom purple
+    fg = "white"      # text color
+  )
+)
+```
+
+## Row {height="60%"} {.tabset}
+
+### Suspended Collections Worked 
+```{r, fig.width=60, fig.height=15}
+	plot(counts) 
+```
+
+### Average Days in Suspension 
+```{r, fig.width=60, fig.height=15}
+	plot(avgs) 
+```
+
+### Transaction Amounts
+```{r, fig.width=60, fig.height=15}
+  plot(sums)
+```
+ 
+# Financial Tasks
+
+```{r, ECHO = FALSE}
+futures <- read_excel (
+  "FuturesMasterQ1.2026.xlsx",
+  sheet = 1)
+
+futuresworked <- futures %>%
+  filter(quarter == "Q1 2026") %>%
+  group_by(`Last Worked By`, month_cat) %>%
+  summarise(n = n(), .groups = "drop")
+
+future <- ggplot(
+  futuresworked,
+  aes(x = n, y = `Last Worked By`)
+) +
+  geom_col() +
+  theme_light() +
+  facet_wrap(~ factor(month_cat, levels = c("Jan", "Feb", "Mar")), scales = "free_x") +
+  geom_text(
+    aes(x = n, y = `Last Worked By`, label = n),
+    inherit.aes = FALSE,
+    size = 12,
+    hjust = 1.02,
+    color = "black"
+  ) +
+  scale_fill_brewer(palette = "Pastel2") +
+  scale_x_continuous(expand = expansion(mult = c(0, 0.02))) +  # small right padding
+  scale_y_discrete(labels = function(x) str_wrap(x, width = 25)) +
+  theme(
+    axis.text.x = element_text(size = 30, face = "bold"),
+    axis.text.y = element_text(size = 25, face = "bold"),
+    axis.title.x = element_text(size = 30, face = "bold", hjust = 0.5),
+    axis.title.y = element_text(size = 30, face = "bold", hjust = 0.5),
+    plot.title = element_text(size = 50, face = "bold", hjust = 0.5),
+    plot.subtitle = element_text(size = 40, face = "bold", hjust = 0.5),
+    legend.text = element_text(size = 40),
+    strip.text = element_text(size = 45),
+    legend.title = element_text(size = 45),
+    legend.position = "bottom"
+  ) +
+  labs(
+    x = "Futures Worked",   # x is the numeric count
+    y = "Case Manager",                  # y lists usernames
+    title = "Count of Futures Worked by Case Manager",
+    subtitle = "1st Quarter"
+  ) 
+rein <- read_excel (
+  "ReinitiateMasterQ1.2026.xlsx",
+  sheet = 1)
+reinworked <- rein %>%
+  filter(quarter == "Q1 2026") %>%
+  group_by(username, month_cat) %>%
+  summarise(n = n(), .groups = "drop")
+
+reinitiate <- ggplot(
+  reinworked,
+  aes(x = n, y = username)
+) +
+  geom_col() +
+  theme_light() +
+  facet_wrap(~ factor(month_cat, levels = c("Jan", "Feb", "Mar")), scales = "free_x") +
+  geom_text(
+    aes(x = n, y = username, label = n),
+    inherit.aes = FALSE,
+    size = 12,
+    hjust = 1.02,
+    color = "black"
+  ) +
+  scale_fill_brewer(palette = "Pastel2") +
+  scale_x_continuous(expand = expansion(mult = c(0, 0.02))) +  # small right padding
+  scale_y_discrete(labels = function(x) str_wrap(x, width = 25)) +
+  theme(
+    axis.text.x = element_text(size = 30, face = "bold"),
+    axis.text.y = element_text(size = 25, face = "bold"),
+    axis.title.x = element_text(size = 30, face = "bold", hjust = 0.5),
+    axis.title.y = element_text(size = 30, face = "bold", hjust = 0.5),
+    plot.title = element_text(size = 50, face = "bold", hjust = 0.5),
+    plot.subtitle = element_text(size = 40, face = "bold", hjust = 0.5),
+    legend.text = element_text(size = 40),
+    strip.text = element_text(size = 45),
+    legend.title = element_text(size = 45),
+    legend.position = "bottom"
+  ) +
+  labs(
+    x = "Reinitiate Button",   # x is the numeric count
+    y = "Case Manager",                  # y lists usernames
+    title = "Count of Reinitiate Button Worked by Case Manager",
+    subtitle = "1st Quarter"
+  )
+eft <- read_excel (
+  "EFTBatchMasterQ1.2026.xlsx",
+  sheet = 1)
+
+eftworked <- eft %>%
+  filter(quarter == "Q1 2026") %>%
+  group_by(username, month_cat) %>%
+  summarise(n = n(), .groups = "drop")
+
+eftbatch <- ggplot(
+  eftworked,
+  aes(x = n, y = username)
+) +
+  geom_col() +
+  theme_light() +
+  facet_wrap(~ factor(month_cat, levels = c("Jan", "Feb", "Mar")), scales = "free_x") +
+  geom_text(
+    aes(x = n, y = username, label = n),
+    inherit.aes = FALSE,
+    size = 12,
+    hjust = 1.02,
+    color = "black"
+  ) +
+  scale_fill_brewer(palette = "Pastel2") +
+  scale_x_continuous(expand = expansion(mult = c(0, 0.02))) +  # small right padding
+  scale_y_discrete(labels = function(x) str_wrap(x, width = 25)) +
+  theme(
+    axis.text.x = element_text(size = 30, face = "bold"),
+    axis.text.y = element_text(size = 25, face = "bold"),
+    axis.title.x = element_text(size = 30, face = "bold", hjust = 0.5),
+    axis.title.y = element_text(size = 30, face = "bold", hjust = 0.5),
+    plot.title = element_text(size = 50, face = "bold", hjust = 0.5),
+    plot.subtitle = element_text(size = 40, face = "bold", hjust = 0.5),
+    legend.text = element_text(size = 40),
+    strip.text = element_text(size = 45),
+    legend.title = element_text(size = 45),
+    legend.position = "bottom"
+  ) +
+  labs(
+    x = "EFT Batch Error",   # x is the numeric count
+    y = "Case Manager",                  # y lists usernames
+    title = "Count of EFT Button Worked by Case Manager",
+    subtitle = "1st Quarter"
+  )
+
+
+```
+
+## Row {height="80%"} {.tabset}
+
+### Futures
+```{r, fig.width=60, fig.height=15}
+	plot(future) 
+```
+
+### Reinitiating 
+```{r, fig.width=60, fig.height=15}
+	plot(reinitiate) 
+```
+
+### EFT Batch
+```{r, fig.width=60, fig.height=15}
+  plot(eftbatch)
+```
+ 
